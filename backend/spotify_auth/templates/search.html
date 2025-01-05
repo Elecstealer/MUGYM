@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spotify Track Search</title>
+</head>
+<body>
+    <h1>Track Search</h1>
+
+    {% if track %}
+    <div>
+        <h2>{{ track.name }}</h2>
+        <p>Artist: {{ track.artists.0.name }}</p>
+        <p>Album: {{ track.album.name }}</p>
+        <p><a href="{{ track.external_urls.spotify }}" target="_blank">Play on Spotify</a></p>
+        <form method="GET" action="{% url 'play_track' %}">
+            <input type="hidden" name="uri" value="{{ track_uri }}">
+            <button type="submit">Play Track</button>
+        </form>
+    </div>
+    {% elif error %}
+    <p>{{ error }}</p>
+    {% endif %}
+
+    <form method="GET" action="{% url 'search_track' %}">
+        <input type="text" name="query" placeholder="Search for a song...">
+        <button type="submit">Search</button>
+    </form>
+</body>
+</html>
