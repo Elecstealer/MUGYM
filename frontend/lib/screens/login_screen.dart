@@ -56,9 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         // 로그인 실패: 에러 메시지 표시
-        final responseData = jsonDecode(response.body);
+        //final responseData = jsonDecode(response.body);
         setState(() {
-          _errorMessage = responseData['error'] ?? '로그인에 실패했습니다.';
+          _errorMessage = '로그인에 실패했습니다.';
         });
       }
     } catch (e) {
