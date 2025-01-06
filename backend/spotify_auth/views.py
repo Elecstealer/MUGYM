@@ -158,13 +158,13 @@ def get_valid_token(spotify_user):
 def display_and_save_top_tracks(request):
     spotify_user = SpotifyUser.objects.first()
     access_token = spotify_user.access_token
-    top_tracks_url = 'https://api.spotify.com/v1/playlists/37i9dQZEVXbLRQDuF5jeBp/tracks'  # Spotify의 Global Top 50 플레이리스트
+    top_tracks_url = 'https://api.spotify.com/v1/playlists/4cRo44TavIHN54w46OqRVc/tracks'
 
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(top_tracks_url, headers=headers)
 
     if response.status_code != 200:
-        return JsonResponse({'error': 'Failed to retrieve top tracks'}, status=response.status_code)
+        return JsonResponse({'error': f'Failed to retrieve top tracksBearer {access_token}'}, status=response.status_code)
 
     # Spotify API에서 Top 50 트랙 데이터를 가져와 필요한 정보만 선택
     tracks_data = response.json().get('items', [])
