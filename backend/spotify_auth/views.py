@@ -158,7 +158,8 @@ def get_valid_token(spotify_user):
 def display_and_save_top_tracks(request):
     spotify_user = SpotifyUser.objects.first()
     access_token = spotify_user.access_token
-    top_tracks_url = 'https://api.spotify.com/v1/playlists/4cRo44TavIHN54w46OqRVc/tracks'
+
+    top_tracks_url = 'https://api.spotify.com/v1/playlists/4cRo44TavIHN54w46OqRVc/tracks' #나쁜놈들 지원 안해줌
 
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(top_tracks_url, headers=headers)
