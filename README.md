@@ -48,4 +48,4 @@
    python manage.py makemigrations
    python manage.py migrate
    ```
-   해도 DB에 새로운 테이블 추가 안될 경우, <br/>backend\spotify_auth\migrations 에서 **__init__.py 제외한 파일** 삭제하고 시도 
+   해도 DB에 새로운 테이블 추가 안될 경우, <br/>backend\spotify_auth\migrations 에서 **__init__.py 제외한 파일 모두** 삭제하고 시도 
