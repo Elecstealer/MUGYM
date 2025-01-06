@@ -6,7 +6,7 @@ from django.http import JsonResponse
 import base64
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import SpotifyUser, AudioFile, SpotifyTrack, UserProfile
+from .models import SpotifyUser, SpotifyTrack, UserProfile, Playlist, PlaylistTrack
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -119,17 +119,6 @@ def search_track(request):
         
     search_results = response.json()
     return JsonResponse({'tracks': search_results.get('tracks', {}).get('items', [])})
-
-# 오디오 파일 URL을 DB에서 가져오는 API
-@api_view(['GET'])
-def get_audio_url(request):
-    try:
-        audio_file = AudioFile.objects.first()  # 예시로 첫 번째 오디오 파일 가져오기
-        if not audio_file:
-            return JsonResponse({'error': 'No audio file found'}, status=404)
-        return JsonResponse({'audio_url': audio_file.file_url})
-    except AudioFile.DoesNotExist:
-        return JsonResponse({'error': 'No audio file available'}, status=404)
 
 def get_valid_token(spotify_user):
     # 토큰 만료 확인
@@ -327,6 +316,7 @@ def login_user(request):
 
         # 비밀번호 확인
         if user.check_password(password):
+            print(f'userid: {user.id}, username: {user.username}, email: {user.email}')
             return JsonResponse({
                 'message': 'Login successful',
                 'user_id': user.id,
@@ -342,7 +332,7 @@ def login_user(request):
 def register_user(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        username = data.get('username')  # 사용자 이름
+        username = data.get('name')  # 사용자 이름
         email = data.get('email')  # 사용자 이메일
         password = data.get('password')  # 비밀번호
 
@@ -406,5 +396,87 @@ def get_username(request, user_id):
         # user_id로 사용자 검색
         user = User.objects.get(id=user_id)
         return JsonResponse({'username': user.username}, status=200)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+
+@api_view(['POST'])
+def save_playlist(request):
+    try:
+        data = request.data
+        user_id = data.get('userId')
+        playlist_name = ''  # 플레이리스트 이름은 필요에 따라 수정
+        exercise_type = data.get('exercise_type')
+        tracks = data.get('tracks', [])
+
+        if not user_id or not exercise_type or not tracks:
+            return JsonResponse({'error': f'Required fields are missing. {user_id}, {exercise_type}, {tracks}'}, status=400)
+
+        user = User.objects.get(id=user_id)
+
+        # 중복 확인: 동일한 유저, 운동 유형, 그리고 같은 트랙 ID 리스트가 이미 존재하는지 확인
+        existing_playlists = Playlist.objects.filter(user=user, exercise_type=exercise_type)
+        for playlist in existing_playlists:
+            playlist_tracks = PlaylistTrack.objects.filter(playlist=playlist).values_list('track__track_id', flat=True)
+            existing_track_ids = set(playlist_tracks)
+            incoming_track_ids = set(track['track_id'] for track in tracks)
+
+            if existing_track_ids == incoming_track_ids:  # 중복된 플레이리스트
+                return JsonResponse({'message': 'Playlist already exists.', 'playlist_id': playlist.id}, status=200)
+
+        # 플레이리스트 생성
+        playlist = Playlist.objects.create(
+            name=playlist_name,
+            user=user,
+            exercise_type=exercise_type
+        )
+
+        missing_tracks = []  # 존재하지 않는 트랙 저장용
+        # 트랙 추가
+        for track_data in tracks:
+            track_id = track_data.get('track_id')
+            try:
+                track = SpotifyTrack.objects.get(track_id=track_id)
+                PlaylistTrack.objects.create(playlist=playlist, track=track)
+            except SpotifyTrack.DoesNotExist:
+                print(f"Track not found: {track_id}")
+                missing_tracks.append(track_id)
+
+        if missing_tracks:
+            return JsonResponse({'error': 'Some tracks were not found in the database.', 'missing_tracks': missing_tracks}, status=404)
+
+        return JsonResponse({'message': 'Playlist saved successfully.', 'playlist_id': playlist.id}, status=201)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def get_user_playlists(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        playlists = Playlist.objects.filter(user=user)
+
+        # 각 플레이리스트의 트랙 데이터 포함
+        playlist_data = []
+        for playlist in playlists:
+            tracks = PlaylistTrack.objects.filter(playlist=playlist).select_related('track')
+            track_list = [
+                {
+                    'track_id': track.track.track_id,
+                    'track_name': track.track.track_name,
+                    'artist_name': track.track.artist_name,
+                    'album_cover': track.track.album_cover,
+                    'duration_ms': track.track.duration_ms,
+                }
+                for track in tracks
+            ]
+            playlist_data.append({
+                'playlist_id': playlist.id,
+                'playlist_name': playlist.name,
+                'exercise_type': playlist.exercise_type,
+                'tracks': track_list,
+            })
+
+        return JsonResponse({'playlists': playlist_data}, status=200)
+
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)

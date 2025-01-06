@@ -3,7 +3,10 @@ import 'package:mugym/screens/playlist_screen.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class MyPage extends StatelessWidget {
-  const MyPage({super.key});
+  final String username; // 사용자 이름
+  final int userId; // 사용자 ID
+
+  const MyPage({super.key, required this.username, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -48,12 +51,12 @@ class MyPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 15),
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'OOO님',
-                            style: TextStyle(
+                            username,
+                            style: const TextStyle(
                               fontFamily: 'Pretendard',
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -113,7 +116,7 @@ class MyPage extends StatelessWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const PlaylistScreen(playlistName: '플레이리스트1', tracks: [],),
+                                  PlaylistScreen(playlistName: '플레이리스트1', tracks: [], userId: userId,),
                             ),
                           );
                         },
@@ -125,7 +128,7 @@ class MyPage extends StatelessWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const PlaylistScreen(playlistName: '플레이리스트2', tracks: [],),
+                                  PlaylistScreen(playlistName: '플레이리스트2', tracks: [], userId: userId,),
                             ),
                           );
                         },
@@ -137,7 +140,7 @@ class MyPage extends StatelessWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const PlaylistScreen(playlistName: '플레이리스트3', tracks: [],),
+                                  PlaylistScreen(playlistName: '플레이리스트3', tracks: [], userId: userId,),
                             ),
                           );
                         },
@@ -149,7 +152,7 @@ class MyPage extends StatelessWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const PlaylistScreen(playlistName: '플레이리스트4', tracks: [],),
+                                  PlaylistScreen(playlistName: '플레이리스트4', tracks: [], userId: userId),
                             ),
                           );
                         },

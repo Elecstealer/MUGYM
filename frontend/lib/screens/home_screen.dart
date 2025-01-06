@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mugym/screens/mix_screen.dart';
+import 'package:mugym/screens/mypage_new.dart'; //임시 mypage
 import 'package:mugym/screens/playlist_screen.dart';
 import 'package:mugym/services/api_service.dart';
 
@@ -49,13 +50,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 28,
                 height: 28,
               ),
-              Text(
-                '${widget.username}님',
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xff111111),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MyPage( 
+                            userId: widget.userId,
+                            username: widget.username,)),
+                  );
+                },
+                child: const Text(
+                  'MY',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff111111),
+                  ),
                 ),
               ),
             ],
@@ -227,6 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => PlaylistScreen(
                       playlistName: '새로운 발견 전체 목록',
                       tracks: trackList,
+                      userId: widget.userId,
                     ),
                   ),
                 );

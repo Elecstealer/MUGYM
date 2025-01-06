@@ -85,4 +85,42 @@ class ApiService {
       throw Exception('Error fetching username: $e');
     }
   }
+
+  static Future<Map<String, dynamic>> savePlaylist(
+      int userId, String exercisetype, List<dynamic> tracks) async {
+    final url = Uri.parse('$baseUrl/auth/save_playlist/');
+    final exerciseMapping = {
+      '런닝': 'running',
+      '요가': 'yoga',
+      '필라테스': 'pilates',
+      '웨이트': 'weight',
+      '클라이밍': 'climbing',
+      '사이클링': 'cycling',
+    };
+    final exerciseeng = exerciseMapping[exercisetype] ?? exercisetype;
+    
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userId': userId,
+        'exercise_type': exerciseeng,
+        'tracks': tracks.map((track) {
+          return {
+            'track_id': track['track_id'],
+            'track_name': track['track_name'],
+            'artist_name': track['artist_name'],
+            'album_cover': track['album_cover'],
+            'duration_ms': track['duration_ms'],
+          };
+        }).toList(),
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to save playlist');
+    }
+  }
 }

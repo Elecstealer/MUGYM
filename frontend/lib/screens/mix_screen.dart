@@ -114,6 +114,7 @@ class _MixScreenState extends State<MixScreen> {
         builder: (context) => PlaylistScreen(
           playlistName: selectedExercise,
           tracks: playlist['tracks'],
+          userId: widget.userId,
         ),
       ));
     } catch (e) {
