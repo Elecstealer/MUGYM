@@ -2,6 +2,17 @@
 ### 1. 노래 업데이트 완료
 37로 시작하는 스포티파이에서 제공하는 플레이리스트는 api로 추출 불가능 -> 일반 사용자로 변경 완료
 
+### 2. 250106 20:13 기준 
+- 이슈
+   - 스포티파이 음원 분석 API 미제공 -> tempo 불러올 수 없음
+   - MyPage에서 저장한 플레이리스트 표시 <- mypage_new로 임시로 빼서 진행 결과만 확인 중, 연결 필요
+ 
+- 수정 완료 
+   - user name 표시
+   - 로그인 에러 메세지
+   - 저장된 플레이리스트 DB에 기록
+
+
 ## 환경설정
 
 ### 1. frontend/pubspec.yaml </br>
@@ -31,3 +42,10 @@
    ```
    python manage.py runserver 0.0.0.0:8000
    ```
+
+### 6. Migration 오류
+   ```
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+   해도 DB에 새로운 테이블 추가 안될 경우, <br/>backend\spotify_auth\migrations 에서 **__init__.py 제외한 파일** 삭제하고 시도 
