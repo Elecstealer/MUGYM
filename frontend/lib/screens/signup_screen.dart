@@ -48,7 +48,7 @@ class _SignUpState extends State<SignUp> {
       final response = await http.post(
         Uri.parse(registerUrl),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
+        body: jsonEncode({"name": name, "email": email, "password": password}),
       );
 
       if (response.statusCode == 200) {
