@@ -404,7 +404,7 @@ def save_playlist(request):
     try:
         data = request.data
         user_id = data.get('userId')
-        playlist_name = ''  # 플레이리스트 이름은 필요에 따라 수정
+        playlist_name = '이름 없는 플레이리스트'  # 기본 플리 이름
         exercise_type = data.get('exercise_type')
         tracks = data.get('tracks', [])
 
