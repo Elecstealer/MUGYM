@@ -37,7 +37,7 @@ class PlaylistScreen extends StatelessWidget {
     }
   }
 
-    Future<void> savePlaylist(BuildContext context) async {
+  Future<void> savePlaylist(BuildContext context) async {
     final url = Uri.parse('http://10.0.2.2:8000/auth/save_playlist/');
     final body = jsonEncode({
       'userId': userId,
@@ -80,6 +80,51 @@ class PlaylistScreen extends StatelessWidget {
           return AlertDialog(
             title: const Text('오류 발생'),
             content: Text('플레이리스트 저장 중 오류가 발생했습니다: $e'),
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> deletePlaylist(BuildContext context) async {
+    final url = Uri.parse('http://10.0.2.2:8000/auth/delete_playlist/');
+    final body = jsonEncode({
+      'userId': userId,
+      'exercise_type': playlistName,
+      'tracks': tracks.map((track) {
+        return {
+          'track_id': track['track_id'],
+          'track_name': track['track_name'],
+          'artist_name': track['artist_name'],
+          'album_cover': track['album_cover'],
+          'duration_ms': track['duration_ms'],
+        };
+      }).toList(),
+    });
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('플레이리스트가 삭제되었습니다.')),
+        );
+        
+      } else {
+        final error = jsonDecode(response.body)['error'];
+        throw Exception(error ?? '삭제 중 문제가 발생했습니다.');
+      }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('오류 발생'),
+            content: Text('플레이리스트 삭제 중 오류가 발생했습니다: $e'),
           );
         },
       );
@@ -136,8 +181,9 @@ class PlaylistScreen extends StatelessWidget {
               ).then((value) {
                 if (value == 'savePlaylist') {
                   savePlaylist(context);
-                  }
-                else if (value == 'deletePlaylist') {}
+                } else if (value == 'deletePlaylist') {
+                  deletePlaylist(context);
+                }
               });
             },
             child: Image.asset('assets/images/more_menu.png',

@@ -480,3 +480,38 @@ def get_user_playlists(request, user_id):
 
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
+
+@api_view(['DELETE'])
+def delete_playlist(request):
+    try:
+        data = request.data
+        user_id = data.get('userId')
+        exercise_type = data.get('exercise_type')
+        tracks = data.get('tracks', [])
+
+        # 필수 데이터 확인
+        if not user_id or not exercise_type or not tracks:
+            return JsonResponse({'error': 'Required fields are missing.'}, status=400)
+
+        # 사용자 확인
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found.'}, status=404)
+
+        # 플레이리스트 검색
+        playlists = Playlist.objects.filter(user=user, exercise_type=exercise_type)
+        for playlist in playlists:
+            playlist_tracks = PlaylistTrack.objects.filter(playlist=playlist).values_list('track__track_id', flat=True)
+            existing_track_ids = set(playlist_tracks)
+            incoming_track_ids = set(track['track_id'] for track in tracks)
+
+            if existing_track_ids == incoming_track_ids:
+                playlist.delete()
+                return JsonResponse({'message': 'Playlist deleted successfully.'}, status=200)
+
+        # 일치하는 플레이리스트가 없을 경우
+        return JsonResponse({'error': 'No matching playlist found.'}, status=404)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
