@@ -427,7 +427,7 @@ def save_playlist(request):
         playlist = Playlist.objects.create(
             name=playlist_name,
             user=user,
-            exercise_type=exercise_type
+            exercise_type=exercise_type.split()[0]
         )
 
         missing_tracks = []  # 존재하지 않는 트랙 저장용
@@ -486,11 +486,11 @@ def delete_playlist(request):
     try:
         data = request.data
         user_id = data.get('userId')
-        exercise_type = data.get('exercise_type')
+        playlistName = data.get('playlistName')
         tracks = data.get('tracks', [])
-
+        print(user_id, playlistName, tracks)
         # 필수 데이터 확인
-        if not user_id or not exercise_type or not tracks:
+        if not user_id or not playlistName or not tracks:
             return JsonResponse({'error': 'Required fields are missing.'}, status=400)
 
         # 사용자 확인
@@ -500,7 +500,7 @@ def delete_playlist(request):
             return JsonResponse({'error': 'User not found.'}, status=404)
 
         # 플레이리스트 검색
-        playlists = Playlist.objects.filter(user=user, exercise_type=exercise_type)
+        playlists = Playlist.objects.filter(user=user, name=playlistName)
         for playlist in playlists:
             playlist_tracks = PlaylistTrack.objects.filter(playlist=playlist).values_list('track__track_id', flat=True)
             existing_track_ids = set(playlist_tracks)

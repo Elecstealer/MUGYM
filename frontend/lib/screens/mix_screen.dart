@@ -115,6 +115,7 @@ class _MixScreenState extends State<MixScreen> {
           playlistName: selectedExercise,
           tracks: playlist['tracks'],
           userId: widget.userId,
+          mypageflag: 0,
         ),
       ));
     } catch (e) {

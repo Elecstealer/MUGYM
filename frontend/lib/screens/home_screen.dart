@@ -185,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       playlistName: playlist['playlist_name'],
                                       tracks: playlist['tracks'],
                                       userId: widget.userId,
+                                      mypageflag: 1,
                                     ),
                                   ),
                                 );
@@ -360,6 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       playlistName: '새로운 발견 전체 목록',
                       tracks: trackList,
                       userId: widget.userId,
+                      mypageflag: 0,
                     ),
                   ),
                 );
