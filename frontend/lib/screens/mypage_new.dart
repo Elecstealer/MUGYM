@@ -20,10 +20,10 @@ class _MyPageState extends State<MyPage> {
   @override
   void initState() {
     super.initState();
-    userPlaylists = loaduserPlaylists(widget.userId); // 플레이리스트 데이터 가져오기
+    userPlaylists = loadUserPlaylists(widget.userId); // 플레이리스트 데이터 가져오기
   }
 
-  Future<List<dynamic>> loaduserPlaylists(int userId) async {
+  Future<List<dynamic>> loadUserPlaylists(int userId) async {
     final url = Uri.parse('http://10.0.2.2:8000/auth/user/$userId/playlists/');
     final response = await http.get(url);
 
@@ -72,9 +72,6 @@ class _MyPageState extends State<MyPage> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xffd9d9d9),
-                          // image: DecorationImage(
-                          //   image: AssetImage('assets/images/profile.png'),
-                          //   fit: BoxFit.cover,
                         ),
                       ),
                       const SizedBox(width: 15),
@@ -82,7 +79,7 @@ class _MyPageState extends State<MyPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                             '${widget.username}님',
+                            '${widget.username}님',
                             style: const TextStyle(
                               fontFamily: 'Pretendard',
                               fontSize: 20,
@@ -90,8 +87,8 @@ class _MyPageState extends State<MyPage> {
                               color: Color(0xffFFFFFF),
                             ),
                           ),
-                          SizedBox(height: 2),
-                          Text(
+                          const SizedBox(height: 2),
+                          const Text(
                             '내 정보 보기',
                             style: TextStyle(
                               fontFamily: 'Pretendard',
@@ -167,16 +164,26 @@ class _MyPageState extends State<MyPage> {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 15.0),
                             child: GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
+                              onTap: () async {
+                                final shouldRefresh =
+                                    await Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (context) => PlaylistScreen(
                                       playlistName: playlist['playlist_name'],
                                       tracks: playlist['tracks'],
                                       userId: widget.userId,
+                                      mypageflag: 1,
                                     ),
                                   ),
                                 );
+
+                                // 새로고침 트리거
+                                if (shouldRefresh == true) {
+                                  setState(() {
+                                    userPlaylists =
+                                        loadUserPlaylists(widget.userId);
+                                  });
+                                }
                               },
                               child: PlaylistBox(
                                 playlistName: playlist['playlist_name'],
@@ -200,27 +207,26 @@ class _MyPageState extends State<MyPage> {
                   ),
                   const SizedBox(height: 12),
                   TableCalendar(
-                        firstDay: DateTime.utc(2024, 1, 1),
-                        lastDay: DateTime.utc(2099, 12, 31),
-                        focusedDay: DateTime.now(),
-                        calendarFormat: CalendarFormat.week,
-                        headerVisible: false,
-                        daysOfWeekVisible: true,
-                        onDaySelected: (selectedDay, focusedDay) {
-                          // Handle day selection
-                        },
-                        calendarStyle: const CalendarStyle(
-                          todayDecoration: BoxDecoration(
-                            color: Color(0xff777777),
-                            shape: BoxShape.circle,
-                          ),
-                          selectedDecoration: BoxDecoration(
-                            color: Color(
-                                0xFF638DFF), // Change this to your desired color
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        ),
+                    firstDay: DateTime.utc(2024, 1, 1),
+                    lastDay: DateTime.utc(2099, 12, 31),
+                    focusedDay: DateTime.now(),
+                    calendarFormat: CalendarFormat.week,
+                    headerVisible: false,
+                    daysOfWeekVisible: true,
+                    onDaySelected: (selectedDay, focusedDay) {
+                      // Handle day selection
+                    },
+                    calendarStyle: const CalendarStyle(
+                      todayDecoration: BoxDecoration(
+                        color: Color(0xff777777),
+                        shape: BoxShape.circle,
+                      ),
+                      selectedDecoration: BoxDecoration(
+                        color: Color(0xFF638DFF),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
@@ -252,7 +258,6 @@ class _MyPageState extends State<MyPage> {
 }
 
 class PlaylistBox extends StatelessWidget {
-  // playlist box widget
   final String playlistName;
   final String? albumCover;
 
@@ -275,11 +280,11 @@ class PlaylistBox extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
                 color: const Color(0xFF777777),
                 image: albumCover != null
-                ? DecorationImage(
-                    image: NetworkImage(albumCover!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
+                    ? DecorationImage(
+                        image: NetworkImage(albumCover!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
             ),
             Positioned(

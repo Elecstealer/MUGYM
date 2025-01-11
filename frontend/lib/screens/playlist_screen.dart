@@ -8,12 +8,14 @@ class PlaylistScreen extends StatelessWidget {
   final String playlistName;
   final List<dynamic> tracks;
   final int userId;
+  final int mypageflag;
 
   const PlaylistScreen({
     super.key,
     required this.playlistName,
     required this.tracks,
     required this.userId,
+    required this.mypageflag
   });
 
   void playAllTracks(BuildContext context) {
@@ -90,7 +92,7 @@ class PlaylistScreen extends StatelessWidget {
     final url = Uri.parse('http://10.0.2.2:8000/auth/delete_playlist/');
     final body = jsonEncode({
       'userId': userId,
-      'exercise_type': playlistName,
+      'playlistName': playlistName,
       'tracks': tracks.map((track) {
         return {
           'track_id': track['track_id'],
@@ -113,7 +115,6 @@ class PlaylistScreen extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('플레이리스트가 삭제되었습니다.')),
         );
-        
       } else {
         final error = jsonDecode(response.body)['error'];
         throw Exception(error ?? '삭제 중 문제가 발생했습니다.');
@@ -141,7 +142,7 @@ class PlaylistScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: GestureDetector(
           onTap: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(true);
           },
           child: Image.asset(
             'assets/images/arrow.png',
@@ -151,11 +152,12 @@ class PlaylistScreen extends StatelessWidget {
         ),
         actions: [
           GestureDetector(
-            onTap: () {
-              showMenu(
-                context: context,
-                position: const RelativeRect.fromLTRB(100, 80, 0, 0),
-                items: [
+                      onTap: () {
+            showMenu(
+              context: context,
+              position: const RelativeRect.fromLTRB(100, 80, 0, 0),
+              items: [
+                if (mypageflag != 1) // mypageflag가 1이 아닐 때만 "플레이리스트 저장" 버튼 추가
                   const PopupMenuItem(
                     value: 'savePlaylist',
                     child: Row(
@@ -167,17 +169,17 @@ class PlaylistScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
-                    value: 'deletePlaylist',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outlined, color: Color(0xff777777)),
-                        SizedBox(width: 2),
-                        Text('재생 목록 삭제'),
-                      ],
-                    ),
+                const PopupMenuItem(
+                  value: 'deletePlaylist',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outlined, color: Color(0xff777777)),
+                      SizedBox(width: 2),
+                      Text('재생 목록 삭제'),
+                    ],
                   ),
-                ],
+                ),
+              ],
               ).then((value) {
                 if (value == 'savePlaylist') {
                   savePlaylist(context);
