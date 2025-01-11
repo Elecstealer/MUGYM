@@ -3,6 +3,8 @@ import 'package:mugym/screens/mix_screen.dart';
 import 'package:mugym/screens/mypage_new.dart'; //임시 mypage
 import 'package:mugym/screens/playlist_screen.dart';
 import 'package:mugym/services/api_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   final String username; // 사용자 이름
@@ -15,8 +17,39 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String selectedExercise = ''; // 선택된 운동 타입
+  String selectedExercise = '런닝'; // 선택된 운동 타입
   List<dynamic> trackList = []; // 새로운 발견 트랙 목록
+  late Future<List<dynamic>> userPlaylists; // 사용자 플레이리스트
+
+  @override
+  void initState() {
+    super.initState();
+    userPlaylists = fetchUserPlaylists(widget.userId);
+    fetchInitialTracks(selectedExercise);
+  }
+  
+  void fetchInitialTracks(String exerciseType) async {
+  try {
+    final tracks = await ApiService.fetchTracksByType(exerciseType);
+    setState(() {
+      trackList = tracks;
+    });
+  } catch (e) {
+    print('Error fetching initial tracks: $e');
+  }
+}
+
+  Future<List<dynamic>> fetchUserPlaylists(int userId) async {
+    final url = Uri.parse('http://10.0.2.2:8000/auth/user/$userId/playlists/');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['playlists'];
+    } else {
+      throw Exception('Failed to load playlists');
+    }
+  }
 
   void onExerciseSelected(String exerciseType) async {
     setState(() {
@@ -80,7 +113,94 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 나만의 믹스 만들기 섹션
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+              children: [
+              const Text(
+                '내 플레이리스트',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff111111),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyPage( 
+                            userId: widget.userId,
+                            username: widget.username,)),
+                  );
+                },
+                child: const Text(
+                  '전체보기 >',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF777777),
+                  ),
+                ),
+              )
+            ]),
+            const SizedBox(height: 12),
+            FutureBuilder<List<dynamic>>(
+              future: userPlaylists,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('오류 발생: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      '저장된 플레이리스트가 없습니다.',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xff777777),
+                      ),
+                    ),
+                  );
+                }
+
+                final playlists = snapshot.data!;
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: playlists.map<Widget>((playlist) {
+                      final albumCover = playlist['tracks'].isNotEmpty
+                          ? playlist['tracks'][0]['album_cover']
+                          : null;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => PlaylistScreen(
+                                      playlistName: playlist['playlist_name'],
+                                      tracks: playlist['tracks'],
+                                      userId: widget.userId,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: PlaylistBox(
+                                playlistName: playlist['playlist_name'],
+                                albumCover: albumCover,
+                              ),
+                            ),
+                          );
+                    }).toList(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 32),
             const Row(
               children: [
                 Text(
@@ -307,6 +427,75 @@ class ExercisePlaylist extends StatelessWidget {
             color: isSelected ? Colors.white : const Color(0xff111111),
           ),
         ),
+      ),
+    );
+  }
+}
+
+
+class PlaylistBox extends StatelessWidget {
+  final String playlistName;
+  final String? albumCover;
+
+  const PlaylistBox({
+    super.key,
+    required this.playlistName,
+    this.albumCover,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Column(
+        children: [
+          Stack(
+            children: <Widget>[
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  color: const Color(0xFF777777),
+                  image: albumCover != null
+                      ? DecorationImage(
+                          image: NetworkImage(albumCover!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+              ),
+              Positioned(
+                bottom: 10,
+                left: 10,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(180),
+                    image: const DecorationImage(
+                      image: AssetImage(
+                          'assets/images/playlist_button(small).png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+          const SizedBox(height: 10),
+          Align(
+            alignment: const Alignment(0, 0),
+            child: Text(
+              playlistName,
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Color(0xff111111),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
