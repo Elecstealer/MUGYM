@@ -27,17 +27,24 @@ class _HomeScreenState extends State<HomeScreen> {
     userPlaylists = fetchUserPlaylists(widget.userId);
     fetchInitialTracks(selectedExercise);
   }
-  
-  void fetchInitialTracks(String exerciseType) async {
-  try {
-    final tracks = await ApiService.fetchTracksByType(exerciseType);
-    setState(() {
-      trackList = tracks;
-    });
-  } catch (e) {
-    print('Error fetching initial tracks: $e');
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 페이지가 다시 나타날 때 사용자 플레이리스트를 새로 가져옵니다.
+    userPlaylists = fetchUserPlaylists(widget.userId);
   }
-}
+
+  void fetchInitialTracks(String exerciseType) async {
+    try {
+      final tracks = await ApiService.fetchTracksByType(exerciseType);
+      setState(() {
+        trackList = tracks;
+      });
+    } catch (e) {
+      print('Error fetching initial tracks: $e');
+    }
+  }
 
   Future<List<dynamic>> fetchUserPlaylists(int userId) async {
     final url = Uri.parse('http://10.0.2.2:8000/auth/user/$userId/playlists/');
@@ -88,10 +95,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => MyPage( 
-                            userId: widget.userId,
-                            username: widget.username,)),
-                  );
+                        builder: (context) => MyPage(
+                              userId: widget.userId,
+                              username: widget.username,
+                            )),
+                  ).then((_) {
+                    // MyPage에서 돌아올 때 새로 고침
+                    setState(() {
+                      userPlaylists = fetchUserPlaylists(widget.userId);
+                    });
+                  });
                 },
                 child: const Text(
                   'MY',
@@ -113,8 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-              children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               const Text(
                 '내 플레이리스트',
                 style: TextStyle(
@@ -128,9 +140,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MyPage( 
-                            userId: widget.userId,
-                            username: widget.username,)),
+                    MaterialPageRoute(
+                        builder: (context) => MyPage(
+                              userId: widget.userId,
+                              username: widget.username,
+                            )),
                   );
                 },
                 child: const Text(
@@ -178,24 +192,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(right: 12.0),
                         child: GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => PlaylistScreen(
-                                      playlistName: playlist['playlist_name'],
-                                      tracks: playlist['tracks'],
-                                      userId: widget.userId,
-                                      mypageflag: 1,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: PlaylistBox(
-                                playlistName: playlist['playlist_name'],
-                                albumCover: albumCover,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => PlaylistScreen(
+                                  playlistName: playlist['playlist_name'],
+                                  tracks: playlist['tracks'],
+                                  userId: widget.userId,
+                                  mypageflag: 1,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          },
+                          child: PlaylistBox(
+                            playlistName: playlist['playlist_name'],
+                            albumCover: albumCover,
+                          ),
+                        ),
+                      );
                     }).toList(),
                   ),
                 );
@@ -433,7 +447,6 @@ class ExercisePlaylist extends StatelessWidget {
     );
   }
 }
-
 
 class PlaylistBox extends StatelessWidget {
   final String playlistName;
