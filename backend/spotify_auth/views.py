@@ -515,3 +515,42 @@ def delete_playlist(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['PUT'])
+def update_playlist_name(request):
+    try:
+        data = request.data
+        user_id = data.get('userId')
+        playlist_name = data.get('playlistName')  # 기존 플레이리스트 이름
+        new_name = data.get('newName')  # 변경할 새 이름
+        tracks = data.get('tracks', [])  # 트랙 리스트
+
+        # 필수 데이터 확인
+        if not user_id or not playlist_name or not new_name or not tracks:
+            return JsonResponse({'error': 'Required fields are missing.'}, status=400)
+
+        # 사용자 확인
+        user = User.objects.get(id=user_id)
+
+        # 플레이리스트 검색
+        playlists = Playlist.objects.filter(user=user, name=playlist_name)
+        for playlist in playlists:
+            playlist_tracks = PlaylistTrack.objects.filter(playlist=playlist).values_list('track__track_id', flat=True)
+            existing_track_ids = set(playlist_tracks)
+            incoming_track_ids = set(track['track_id'] for track in tracks)
+
+            # 트랙 ID가 일치하면 이름 변경
+            if existing_track_ids == incoming_track_ids:
+                playlist.name = new_name
+                playlist.save()
+                return JsonResponse({'message': 'Playlist name updated successfully.'}, status=200)
+
+        # 일치하는 플레이리스트가 없을 경우
+        return JsonResponse({'error': 'No matching playlist found.'}, status=404)
+
+    except Playlist.DoesNotExist:
+        return JsonResponse({'error': 'Playlist not found.'}, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
