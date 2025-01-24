@@ -12,6 +12,7 @@ urlpatterns = [
     path('get_tracks_by_type/', views.get_tracks_by_type, name='get_tracks_by_type'),
     path('save_playlist/', views.save_playlist, name='save_playlist'),
     path('delete_playlist/', views.delete_playlist, name='delete_playlist'),
+    path('update_playlist_name/', views.update_playlist_name, name='update_playlist_name'),
 
     path('user/login/', views.login_user, name='user_login'),
     path('user/register/', views.register_user, name='user_register'),
