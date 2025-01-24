@@ -222,7 +222,79 @@ class _PlayScreenState extends State<PlayScreen> {
                       // 플레이리스트 버튼
                       IconButton(
                         onPressed: () {
-                          Navigator.of(context).pop(); // 이전 화면으로 이동
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.6,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.all(20),
+                                      child: Text(
+                                        "플레이리스트",
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Expanded(
+                                      child: ListView.builder(
+                                        itemCount: widget.tracks.length,
+                                        itemBuilder: (context, index) {
+                                          final track = widget.tracks[index];
+                                          return ListTile(
+                                            leading: Image.network(
+                                              track['album_cover'],
+                                              width: 50,
+                                              height: 50,
+                                              fit: BoxFit.cover,
+                                            ),
+                                            title: Text(
+                                              track['track_name'],
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              track['artist_name'],
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            onTap: () {
+                                              Navigator.pop(context); // 모달 닫기
+                                              setState(() {
+                                                currentTrackIndex = index;
+                                                isLoading = true;
+                                              });
+                                              _playCurrentTrack(); // 선택된 트랙 재생
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                          // Navigator.of(context).pop(); // 이전 화면으로 이동
                         },
                         icon: Image.asset(
                           'assets/images/playlist.png',
