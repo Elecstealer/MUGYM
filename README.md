@@ -27,10 +27,10 @@
 MUGYM은 사용자가 운동 종류와 시간을 입력하면 해당 운동에 적합한 BPM의 노래로 제한 시간에 맞는 플레이리스트를 제공합니다. 또한, 사용자가 직접 플레이리스트를 구성하거나 선호 아티스트를 선택해 맞춤 플레이리스트를 생성할 수 있습니다. 이를 통해 운동 효율을 높일 수 있습니다.
 
 ### 발표 자료
-<br>
-<img src="./image/Slide 16_9 - 0.png">
-<img src="./image/Slide 16_9 - 2.png">
-<img src="./image/Slide 16_9 - 3.png">
-<img src="./image/Slide 16_9 - 4.png">
-<img src="./image/Slide 16_9 - 5.png">
-<img src="./image/Slide 16_9 - 6.png">
+![슬라이드4](https://github.com/user-attachments/assets/0006a14a-d78b-4ba8-b978-fdd2692bfe47)
+![슬라이드5](https://github.com/user-attachments/assets/965626e1-a69b-4f9d-8cea-5e013b744c5f)
+![슬라이드6](https://github.com/user-attachments/assets/161aa04e-9df3-464b-be9b-086d75ec35f6)
+![슬라이드7](https://github.com/user-attachments/assets/492ea226-f540-48b7-9fc9-88718770c3e4)
+![슬라이드8](https://github.com/user-attachments/assets/041ebc47-a2e1-48e5-abf3-369ad1d26ba6)
+![슬라이드9](https://github.com/user-attachments/assets/35a9c1a5-cfff-4562-88be-b2d5888a68b6)
+
